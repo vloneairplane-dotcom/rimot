@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: remote_manager
+      POSTGRES_USER: remote_manager
+      POSTGRES_PASSWORD: remote_manager
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+
+  api:
+    build: ./server
+    environment:
+      DATABASE_URL: postgresql+asyncpg://remote_manager:remote_manager@postgres:5432/remote_manager
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_ADMIN_IDS: ${TELEGRAM_ADMIN_IDS}
+      PUBLIC_API_BASE: http://api:8000
+    ports: ["8000:8000"]
+    depends_on: [postgres]
+
+  dashboard:
+    build: ./dashboard
+    ports: ["5173:5173"]
+    depends_on: [api]
+
+volumes:
+  pgdata:
